@@ -22,6 +22,7 @@ enableRawMode(void)
 	raw.c_iflag &= ~(IXON);
 	raw.c_lflag &= ~(ECHO);
 	raw.c_lflag &= ~(ICANON);
+	raw.c_lflag &= ~(IEXTEN);
 	raw.c_lflag &= ~(ISIG);
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 }
