@@ -20,6 +20,7 @@ enableRawMode(void)
 	atexit(disableRawMode);
 	struct termios raw = orig_termios;
 	raw.c_iflag &= ~(ICRNL);
+	raw.c_oflag &= ~(OPOST);
 	raw.c_iflag &= ~(IXON);
 	raw.c_lflag &= ~(ECHO);
 	raw.c_lflag &= ~(ICANON);
