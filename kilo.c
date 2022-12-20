@@ -93,7 +93,10 @@ editorProcessKeypress(void)
 void
 editorRefreshScreen(void)
 {
+	/* clear screen */
 	write(STDOUT_FILENO, "\x1b[2J", 4);
+	/* move cursor to top left */
+	write(STDOUT_FILENO, "\x1b[H", 3);
 }
 
 /*** init ***/
