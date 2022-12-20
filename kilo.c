@@ -1,12 +1,14 @@
-
+/*** includes ***/
 #include <termios.h>
 #include <unistd.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+/*** data ***/
 struct termios orig_termios;
 
+/*** terminal ***/
 void
 die(const char *s)
 {
@@ -52,6 +54,7 @@ enableRawMode(void)
 	}
 }
 
+/*** init ***/
 int
 main(int argc, char *argv[])
 {
