@@ -5,6 +5,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/*** defines ***/
+#define CTRL_KEY(k) ((k) & 0x1f)
+
 /*** data ***/
 struct termios orig_termios;
 
@@ -75,7 +78,7 @@ main(int argc, char *argv[])
 		{
 			printf("%d ('%c')\r\n", c, c);
 		}
-		if (c == 'q')
+		if (c == CTRL_KEY('q'))
 		{
 			break;
 		}
