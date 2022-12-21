@@ -83,6 +83,35 @@ editorReadKey(void)
 }
 
 int
+getCurrentPosition(int *rows, int *cols)
+{
+	*rows = 0;
+	*cols = 0;
+
+	if (write(STDOUT_FILENO, "\x1b[6n", 4) != 4)
+	{
+		return -1;
+	}
+	printf("\r\n");
+	char c = '\0';
+	while (read(STDIN_FILENO, &c, 1) == 1)
+	{
+		if (iscntrl(c))
+		{
+			printf("%d\r\n", c);
+		}
+		else
+		{
+			printf("%d ('%c')\r\n", c, c);
+		}
+	}
+
+	editorReadKey();
+
+	return -1;
+}
+
+int
 getWindowSize(int *rows, int *cols)
 {
 	struct winsize ws;
@@ -93,8 +122,7 @@ getWindowSize(int *rows, int *cols)
 		{
 			return -1;
 		}
-		editorReadKey();
-		return -1;
+		return getCurrentPosition(rows, cols);
 	}
 	else
 	{
