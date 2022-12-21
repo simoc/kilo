@@ -215,6 +215,16 @@ editorDrawRows(struct abuf *ab)
 			{
 				welcomelen = E.screencols;
 			}
+			int padding = (E.screencols - welcomelen) / 2;
+			if (padding > 0)
+			{
+				abAppend(ab, "~", 1);
+				padding--;
+			}
+			while (padding-- > 0)
+			{
+				abAppend(ab, " ", 1);
+			}
 			abAppend(ab, welcome, welcomelen);
 		}
 		else
