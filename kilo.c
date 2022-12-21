@@ -85,6 +85,9 @@ editorReadKey(void)
 int
 getCurrentPosition(int *rows, int *cols)
 {
+	char buf[32];
+	unsigned int i = 0;
+
 	*rows = 0;
 	*cols = 0;
 
@@ -92,19 +95,22 @@ getCurrentPosition(int *rows, int *cols)
 	{
 		return -1;
 	}
-	printf("\r\n");
-	char c = '\0';
-	while (read(STDIN_FILENO, &c, 1) == 1)
+
+	while (i < sizeof(buf) - 1)
 	{
-		if (iscntrl(c))
+		if (read(STDIN_FILENO, &buf[i], 1) != 1)
 		{
-			printf("%d\r\n", c);
+			break;
 		}
-		else
+		if (buf[i] == 'R')
 		{
-			printf("%d ('%c')\r\n", c, c);
+			break;
 		}
+		i++;
 	}
+	buf[i] = '\0';
+
+	printf("\r\n&buf[1]: '%s'\r\n", &buf[1]);
 
 	editorReadKey();
 
