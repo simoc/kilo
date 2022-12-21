@@ -198,17 +198,17 @@ editorProcessKeypress(void)
 /*** output ***/
 
 void
-editorDrawRows(void)
+editorDrawRows(struct abuf *ab)
 {
 	int y;
 
 	for (y = 0; y < E.screenrows; y++)
 	{
-		write(STDOUT_FILENO, "~", 1);
+		abAppend(ab, "~", 1);
 
 		if (y < E.screenrows - 1)
 		{
-			write(STDOUT_FILENO, "\r\n", 2);
+			abAppend(ab, "\r\n", 2);
 		}
 	}
 }
@@ -216,12 +216,17 @@ editorDrawRows(void)
 void
 editorRefreshScreen(void)
 {
+	struct abuf ab = ABUF_INIT;
+
 	/* clear screen */
-	write(STDOUT_FILENO, "\x1b[2J", 4);
+	abAppend(&ab, "\x1b[2J", 4);
 	/* move cursor to top left */
-	write(STDOUT_FILENO, "\x1b[H", 3);
-	editorDrawRows();
-	write(STDOUT_FILENO, "\x1b[H", 3);
+	abAppend(&ab, "\x1b[H", 3);
+	editorDrawRows(&ab);
+	abAppend(&ab, "\x1b[H", 3);
+
+	write(STDOUT_FILENO, ab.b, ab.len);
+	abFree(&ab);
 }
 
 /*** init ***/
