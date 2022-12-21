@@ -206,6 +206,7 @@ editorDrawRows(struct abuf *ab)
 	{
 		abAppend(ab, "~", 1);
 
+		abAppend(ab, "\x1b[K", 3);
 		if (y < E.screenrows - 1)
 		{
 			abAppend(ab, "\r\n", 2);
@@ -220,8 +221,6 @@ editorRefreshScreen(void)
 
 	/* hide cursor */
 	abAppend(&ab, "\x1b[?25l", 6);
-	/* clear screen */
-	abAppend(&ab, "\x1b[2J", 4);
 	/* move cursor to top left */
 	abAppend(&ab, "\x1b[H", 3);
 	editorDrawRows(&ab);
