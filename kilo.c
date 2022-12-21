@@ -218,12 +218,16 @@ editorRefreshScreen(void)
 {
 	struct abuf ab = ABUF_INIT;
 
+	/* hide cursor */
+	abAppend(&ab, "\x1b[?25l", 6);
 	/* clear screen */
 	abAppend(&ab, "\x1b[2J", 4);
 	/* move cursor to top left */
 	abAppend(&ab, "\x1b[H", 3);
 	editorDrawRows(&ab);
 	abAppend(&ab, "\x1b[H", 3);
+	/* show cursor */
+	abAppend(&ab, "\x1b[?25h", 6);
 
 	write(STDOUT_FILENO, ab.b, ab.len);
 	abFree(&ab);
