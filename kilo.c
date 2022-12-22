@@ -15,10 +15,10 @@
 
 enum editorKey
 {
-	ARROW_LEFT = 'a',
-	ARROW_RIGHT = 'd',
-	ARROW_DOWN = 's',
-	ARROW_UP = 'w'
+	ARROW_LEFT = 1000,
+	ARROW_RIGHT,
+	ARROW_DOWN,
+	ARROW_UP
 };
 
 /*** data ***/
@@ -82,7 +82,7 @@ enableRawMode(void)
 	}
 }
 
-char
+int
 editorReadKey(void)
 {
 	int nread;
@@ -229,7 +229,7 @@ abFree(struct abuf *ab)
 /*** input ***/
 
 void
-editorMoveCursor(char key)
+editorMoveCursor(int key)
 {
 	switch (key)
 	{
@@ -251,7 +251,7 @@ editorMoveCursor(char key)
 void
 editorProcessKeypress(void)
 {
-	char c = editorReadKey();
+	int c = editorReadKey();
 
 	switch (c)
 	{
