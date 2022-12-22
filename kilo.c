@@ -19,6 +19,7 @@ enum editorKey
 	ARROW_RIGHT,
 	ARROW_DOWN,
 	ARROW_UP,
+	DEL_KEY,
 	HOME_KEY,
 	END_KEY,
 	PAGE_UP,
@@ -126,6 +127,8 @@ editorReadKey(void)
 					{
 					case '1':
 						return HOME_KEY;
+					case '3':
+						return DEL_KEY;
 					case '4':
 						return END_KEY;
 					case '5':
