@@ -13,6 +13,7 @@
 
 #define CTRL_KEY(k) ((k) & 0x1f)
 
+/*** data ***/
 enum editorKey
 {
 	ARROW_LEFT = 1000,
@@ -26,7 +27,12 @@ enum editorKey
 	PAGE_DOWN
 };
 
-/*** data ***/
+typedef struct erow
+{
+	int size;
+	char *chars;
+} erow;
+
 struct editorConfig
 {
 	/* current cursor position */
@@ -35,6 +41,8 @@ struct editorConfig
 	/* size of screen */
 	int screenrows;
 	int screencols;
+	int numrows;
+	erow row;
 	struct termios orig_termios;
 };
 struct editorConfig E;
@@ -420,6 +428,7 @@ initEditor(void)
 {
 	E.cx = 0;
 	E.cy = 0;
+	E.numrows = 0;
 
 	if (getWindowSize(&E.screenrows, &E.screencols) == -1)
 	{
