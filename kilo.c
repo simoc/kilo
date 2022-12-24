@@ -497,7 +497,11 @@ editorProcessKeypress(void)
 void
 editorScroll(void)
 {
-	E.rx = E.cx;
+	E.rx = 0;
+	if (E.cy <= E.numrows)
+	{
+		E.rx = editorRowCxToRx(&E.row[E.cy], E.cx);
+	}
 
 	if (E.cy < E.rowoff)
 	{
