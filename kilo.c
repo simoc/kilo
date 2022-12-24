@@ -275,7 +275,7 @@ editorUpdateRow(erow *row)
 
 	int j;
 	int idx = 0;
-	for (j = 0; j -> row->size; j++)
+	for (j = 0; j < row->size; j++)
 	{
 		row->render[idx++] = row->chars[j];
 	}
@@ -513,7 +513,7 @@ editorDrawRows(struct abuf *ab)
 		}
 		else
 		{
-			int len = E.row[filerow].size - E.coloff;
+			int len = E.row[filerow].rsize - E.coloff;
 			if (len < 0)
 			{
 				len = 0;
@@ -522,7 +522,7 @@ editorDrawRows(struct abuf *ab)
 			{
 				len = E.screencols;
 			}
-			abAppend(ab, &E.row[filerow].chars[E.coloff], len);
+			abAppend(ab, &E.row[filerow].render[E.coloff], len);
 		}
 
 		abAppend(ab, "\x1b[K", 3);
