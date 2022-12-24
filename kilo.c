@@ -411,6 +411,19 @@ editorProcessKeypress(void)
 /*** output ***/
 
 void
+editorScroll(void)
+{
+	if (E.cy < E.rowoff)
+	{
+		E.rowoff = E.cy;
+	}
+	if (E.cy >= E.rowoff + E.screenrows)
+	{
+		E.rowoff = E.cy - E.screenrows + 1;
+	}
+}
+
+void
 editorDrawRows(struct abuf *ab)
 {
 	int y;
@@ -467,6 +480,8 @@ editorDrawRows(struct abuf *ab)
 void
 editorRefreshScreen(void)
 {
+	editorScroll();
+
 	struct abuf ab = ABUF_INIT;
 
 	/* hide cursor */
