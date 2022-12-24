@@ -480,6 +480,8 @@ editorProcessKeypress(void)
 void
 editorScroll(void)
 {
+	E.rx = E.cx;
+
 	if (E.cy < E.rowoff)
 	{
 		E.rowoff = E.cy;
@@ -488,13 +490,13 @@ editorScroll(void)
 	{
 		E.rowoff = E.cy - E.screenrows + 1;
 	}
-	if (E.cx < E.coloff)
+	if (E.rx < E.coloff)
 	{
-		E.coloff = E.cx;
+		E.coloff = E.rx;
 	}
-	if (E.cx >= E.coloff + E.screencols)
+	if (E.rx >= E.coloff + E.screencols)
 	{
-		E.coloff = E.cx - E.screencols + 1;
+		E.coloff = E.rx - E.screencols + 1;
 	}
 }
 
