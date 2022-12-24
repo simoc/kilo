@@ -600,7 +600,14 @@ editorDrawStatusBar(struct abuf *ab)
 {
 	/* invert colours */
 	abAppend(ab, "\x1b[7m", 4);
-	int len = 0;
+	char status[80];
+	int len = snprintf(status, sizeof(status), "%.20s - %d lines",
+		E.filename ? E.filename : "[No Name]", E.numrows);
+	if (len > E.screencols)
+	{
+		len = E.screencols;
+	}
+	abAppend(ab, status, len);
 	while (len < E.screencols)
 	{
 		abAppend(ab, " ", 1);
