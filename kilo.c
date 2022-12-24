@@ -592,6 +592,21 @@ editorDrawRows(struct abuf *ab)
 }
 
 void
+editorDrawStatusBar(struct abuf *ab)
+{
+	/* invert colours */
+	abAppend(ab, "\x1b[7m", 4);
+	int len = 0;
+	while (len < E.screencols)
+	{
+		abAppend(ab, " ", 1);
+		len++;
+	}
+	/* restore normal colours */
+	abAppend(ab, "\x1b[m", 3);
+}
+
+void
 editorRefreshScreen(void)
 {
 	editorScroll();
@@ -603,6 +618,7 @@ editorRefreshScreen(void)
 	/* move cursor to top left */
 	abAppend(&ab, "\x1b[H", 3);
 	editorDrawRows(&ab);
+	editorDrawStatusBar(&ab);
 
 	char buf[32];
 	snprintf(buf, sizeof(buf), "\x1b[%d;%dH",
