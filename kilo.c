@@ -633,6 +633,9 @@ initEditor(void)
 	{
 		die("getWindowSize");
 	}
+
+	/* make room for status bar */
+	E.screenrows -= 1;
 }
 
 int
