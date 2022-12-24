@@ -348,7 +348,7 @@ void
 editorOpen(char *filename)
 {
 	free(E.filename);
-	E.filename = filename;
+	E.filename = strdup(filename);
 
 	FILE *fp = fopen(filename, "r");
 	if (!fp)
