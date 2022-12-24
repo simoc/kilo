@@ -44,6 +44,8 @@ struct editorConfig
 	/* current cursor position */
 	int cx;
 	int cy;
+	/* first row of file being displayed */
+	int rowoff;
 	/* size of screen */
 	int screenrows;
 	int screencols;
@@ -489,6 +491,7 @@ initEditor(void)
 {
 	E.cx = 0;
 	E.cy = 0;
+	E.rowoff = 0;
 	E.numrows = 0;
 	E.row = NULL;
 
