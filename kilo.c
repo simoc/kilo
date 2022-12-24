@@ -463,12 +463,16 @@ editorDrawRows(struct abuf *ab)
 		}
 		else
 		{
-			int len = E.row[filerow].size;
+			int len = E.row[filerow].size - E.coloff;
+			if (len < 0)
+			{
+				len = 0;
+			}
 			if (len > E.screencols)
 			{
 				len = E.screencols;
 			}
-			abAppend(ab, E.row[filerow].chars, len);
+			abAppend(ab, &E.row[filerow].chars[E.coloff], len);
 		}
 
 		abAppend(ab, "\x1b[K", 3);
