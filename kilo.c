@@ -16,6 +16,7 @@
 
 /*** defines ***/
 #define KILO_VERSION "0.0.1"
+#define KILO_TAB_STOP 8
 
 #define CTRL_KEY(k) ((k) & 0x1f)
 
@@ -281,7 +282,7 @@ editorUpdateRow(erow *row)
 	}
 
 	free(row->render);
-	row->render = malloc(row->size + tabs * 7 + 1);
+	row->render = malloc(row->size + tabs * (KILO_TAB_STOP - 1) + 1);
 
 	int idx = 0;
 	for (j = 0; j < row->size; j++)
@@ -289,7 +290,7 @@ editorUpdateRow(erow *row)
 		if (row->chars[j] == '\t')
 		{
 			row->render[idx++] = ' ';
-			while (idx % 8 != 0)
+			while (idx % KILO_TAB_STOP != 0)
 			{
 				row->render[idx++] = ' ';
 			}
