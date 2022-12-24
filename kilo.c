@@ -47,6 +47,8 @@ struct editorConfig
 	/* current cursor position */
 	int cx;
 	int cy;
+	/* index into erow.render */
+	int rx;
 	/* first row of file being displayed */
 	int rowoff;
 	/* first column of file being displayed */
@@ -586,6 +588,7 @@ initEditor(void)
 {
 	E.cx = 0;
 	E.cy = 0;
+	E.rx = 0;
 	E.rowoff = 0;
 	E.coloff = 0;
 	E.numrows = 0;
