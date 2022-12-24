@@ -1,4 +1,9 @@
 /*** includes ***/
+
+#define _DEFAULT_SOURCE
+#define _BSD_SOURCE
+#define _GNU_SOURCE
+
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <termios.h>
