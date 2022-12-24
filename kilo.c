@@ -417,7 +417,8 @@ editorDrawRows(struct abuf *ab)
 
 	for (y = 0; y < E.screenrows; y++)
 	{
-		if (y >= E.numrows)
+		int filerow = y + E.rowoff;
+		if (filerow >= E.numrows)
 		{
 			if (E.numrows == 0 && y == E.screenrows / 3)
 			{
@@ -447,12 +448,12 @@ editorDrawRows(struct abuf *ab)
 		}
 		else
 		{
-			int len = E.row[y].size;
+			int len = E.row[filerow].size;
 			if (len > E.screencols)
 			{
 				len = E.screencols;
 			}
-			abAppend(ab, E.row[y].chars, len);
+			abAppend(ab, E.row[filerow].chars, len);
 		}
 
 		abAppend(ab, "\x1b[K", 3);
