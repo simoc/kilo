@@ -360,6 +360,20 @@ editorRowInsertChar(erow *row, int at, int c)
 	editorUpdateRow(row);
 }
 
+/*** editor operations ***/
+
+void
+editorInsertChar(int c)
+{
+	if (E.cy == E.numrows)
+	{
+		/* add empty line to end of file */
+		editorAppendRow("", 0);
+	}
+	editorRowInsertChar(&E.row[E.cy], E.cx, c);
+	E.cx++;
+}
+
 /*** file i/o ***/
 
 void
