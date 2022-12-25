@@ -436,6 +436,7 @@ editorOpen(char *filename)
 	}
 	free(line);
 	fclose(fp);
+	E.dirty = 0;
 }
 
 void
@@ -458,6 +459,7 @@ editorSave(void)
 			{
 				close(fd);
 				free(buf);
+				E.dirty = 0;
 				editorSetStatusMessage("%d bytes written to disk", len);
 				return;
 			}
