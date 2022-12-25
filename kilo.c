@@ -62,6 +62,8 @@ struct editorConfig
 	int screencols;
 	int numrows;
 	erow *row;
+	/* is file changed since last modification? */
+	int dirty;
 	char *filename;
 	char statusmsg[80];
 	time_t statusmsg_time;
@@ -808,6 +810,7 @@ initEditor(void)
 	E.coloff = 0;
 	E.numrows = 0;
 	E.row = NULL;
+	E.dirty = 0;
 	E.filename = NULL;
 	E.statusmsg[0] = '\0';
 	E.statusmsg_time = 0;
