@@ -630,6 +630,7 @@ editorDrawStatusBar(struct abuf *ab)
 	}
 	/* restore normal colours */
 	abAppend(ab, "\x1b[m", 3);
+	abAppend(ab, "\r\n", 2);
 }
 
 void
@@ -689,8 +690,8 @@ initEditor(void)
 		die("getWindowSize");
 	}
 
-	/* make room for status bar */
-	E.screenrows -= 1;
+	/* make room for status bar and status message */
+	E.screenrows -= 2;
 }
 
 int
