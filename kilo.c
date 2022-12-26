@@ -104,18 +104,10 @@ enableRawMode(void)
 	}
 	atexit(disableRawMode);
 	struct termios raw = E.orig_termios;
-	raw.c_iflag &= ~(BRKINT);
-	raw.c_iflag &= ~(ICRNL);
-	raw.c_iflag &= ~(INPCK);
-	raw.c_iflag &= ~(ISTRIP);
-	raw.c_iflag &= ~(IXON);
+	raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
 	raw.c_oflag &= ~(OPOST);
 	raw.c_cflag |= (CS8);
-	raw.c_iflag &= ~(IXON);
-	raw.c_lflag &= ~(ECHO);
-	raw.c_lflag &= ~(ICANON);
-	raw.c_lflag &= ~(IEXTEN);
-	raw.c_lflag &= ~(ISIG);
+	raw.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
 	raw.c_cc[VMIN] = 0;
 	raw.c_cc[VTIME] = 1;
 	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1)
