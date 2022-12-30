@@ -606,7 +606,7 @@ editorFind(void)
 		if (match)
 		{
 			E.cy = i;
-			E.cx = match - row->render;
+			E.cx = editorRowRxToCx(row, match - row->render);
 			E.rowoff = E.numrows;
 			break;
 		}
