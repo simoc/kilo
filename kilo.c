@@ -76,6 +76,7 @@ struct editorConfig E;
 
 void editorSetStatusMessage(const char *fmt, ...);
 void editorRefreshScreen(void);
+char *editorPrompt(char *prompt);
 
 /*** terminal ***/
 void
@@ -534,7 +535,7 @@ editorSave(void)
 {
 	if (E.filename == NULL)
 	{
-		return;
+		E.filename = editorPrompt("Save as: %s");
 	}
 
 	int len;
