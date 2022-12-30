@@ -76,7 +76,7 @@ struct editorConfig E;
 
 void editorSetStatusMessage(const char *fmt, ...);
 void editorRefreshScreen(void);
-char *editorPrompt(char *prompt);
+char *editorPrompt(char *prompt, void (*callback)(char *, int));
 
 /*** terminal ***/
 void
@@ -648,7 +648,7 @@ abFree(struct abuf *ab)
 /*** input ***/
 
 char *
-editorPrompt(char *prompt)
+editorPrompt(char *prompt, void (*callback)(char *, int))
 {
 	size_t bufsize = 128;
 	char *buf = malloc(bufsize);
@@ -672,6 +672,10 @@ editorPrompt(char *prompt)
 		else if (c == '\x1b')
 		{
 				editorSetStatusMessage("");
+				if (callback)
+				{
+					callback(buf, c);
+				}
 				free(buf);
 				return NULL;
 		}
@@ -680,6 +684,10 @@ editorPrompt(char *prompt)
 			if (buflen != 0)
 			{
 				editorSetStatusMessage("");
+				if (callback)
+				{
+					callback(buf, c);
+				}
 				return buf;
 			}
 		}
@@ -692,6 +700,11 @@ editorPrompt(char *prompt)
 			}
 			buf[buflen++] = c;
 			buf[buflen] = '\0';
+		}
+
+		if (callback)
+		{
+			callback(buf, c);
 		}
 	}
 }
