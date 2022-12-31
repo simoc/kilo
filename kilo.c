@@ -292,13 +292,17 @@ editorUpdateSyntax(erow *row)
 	row->hl = realloc(row->hl, row->rsize);
 	memset(row->hl, HL_NORMAL, row->rsize);
 
-	int i;
-	for (i = 0; i < row->rsize; i++)
+	int i = 0;
+	while (i < row->rsize)
 	{
-		if (isdigit(row->render[i]))
+		char c = row->render[i];
+
+		if (isdigit(c))
 		{
 			row->hl[i] = HL_NUMBER;
 		}
+
+		i++;
 	}
 }
 
