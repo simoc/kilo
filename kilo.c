@@ -1029,20 +1029,29 @@ editorDrawRows(struct abuf *ab)
 			}
 			char *c = &E.row[filerow].render[E.coloff];
 			unsigned char *hl = &E.row[filerow].hl[E.coloff];
+			int current_colour = -1;
 			int j;
 			for (j = 0; j < len; j++)
 			{
 				if (hl[j] == HL_NORMAL)
 				{
-					abAppend(ab, "\x1b[39m", 5);
+					if (current_colour != -1)
+					{
+						abAppend(ab, "\x1b[39m", 5);
+						current_colour = -1;
+					}
 					abAppend(ab, &c[j], 1);
 				}
 				else
 				{
-					int color = editorSyntaxToColour(hl[j]);
-					char buf[16];
-					int clen = snprintf(buf, sizeof(buf), "\x1b[%dm", color);
-					abAppend(ab, buf, clen);
+					int colour = editorSyntaxToColour(hl[j]);
+					if (colour != current_colour)
+					{
+						current_colour = colour;
+						char buf[16];
+						int clen = snprintf(buf, sizeof(buf), "\x1b[%dm", colour);
+						abAppend(ab, buf, clen);
+					}
 					abAppend(ab, &c[j], 1);
 				}
 			}
