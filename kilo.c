@@ -45,6 +45,7 @@ typedef struct erow
 	int rsize;
 	char *chars;
 	char *render;
+	char *hl;
 } erow;
 
 struct editorConfig
@@ -370,6 +371,7 @@ editorInsertRow(int at, char *s, size_t len)
 
 	E.row[at].rsize = 0;
 	E.row[at].render = NULL;
+	E.row[at].hl = NULL;
 	editorUpdateRow(&E.row[at]);
 
 	E.numrows++;
@@ -381,6 +383,7 @@ editorFreeRow(erow *row)
 {
 	free(row->chars);
 	free(row->render);
+	free(row->hl);
 }
 
 void
