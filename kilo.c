@@ -301,6 +301,18 @@ editorUpdateSyntax(erow *row)
 	}
 }
 
+int
+editorSyntaxToColour(int hl)
+{
+	switch (hl)
+	{
+	case HL_NUMBER:
+		return 31;
+	default:
+		return 37;
+	}
+}
+
 /*** row operations ***/
 
 int
