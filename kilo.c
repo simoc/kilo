@@ -45,7 +45,7 @@ typedef struct erow
 	int rsize;
 	char *chars;
 	char *render;
-	char *hl;
+	unsigned char *hl;
 } erow;
 
 struct editorConfig
