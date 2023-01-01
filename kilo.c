@@ -52,6 +52,7 @@ enum editorKey
 enum editorHighlight
 {
 	HL_NORMAL = 0,
+	HL_STRING,
 	HL_NUMBER,
 	HL_MATCH
 };
@@ -360,6 +361,8 @@ editorSyntaxToColour(int hl)
 {
 	switch (hl)
 	{
+	case HL_STRING:
+		return 35;
 	case HL_NUMBER:
 		return 31;
 	case HL_MATCH:
