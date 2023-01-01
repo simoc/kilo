@@ -347,6 +347,7 @@ editorUpdateSyntax(erow *row)
 	{
 		return;
 	}
+	char **keywords = E.syntax->keywords;
 
 	char *scs = E.syntax->singleline_comment_start;
 	int scs_len = scs ? strlen(scs) : 0;
@@ -409,6 +410,33 @@ editorUpdateSyntax(erow *row)
 			{
 				row->hl[i] = HL_NUMBER;
 				i++;
+				prev_sep = 0;
+				continue;
+			}
+		}
+
+		if (prev_sep)
+		{
+			int j;
+			for (j = 0; keywords[j] != NULL; j++)
+			{
+				int klen = strlen(keywords[j]);
+				int kw2 = (keywords[j][klen -1] == '|');
+				if (kw2 != 0)
+				{
+					klen--;
+				}
+
+				if (strncmp(&row->render[i], keywords[j], klen) == 0 &&
+					is_separator(row->render[i + klen]))
+				{
+					memset(&row->hl[i], kw2 != 0 ? HL_KEYWORD2 : HL_KEYWORD1, klen);
+					i += klen;
+					break;
+				}
+			}
+			if (keywords[j] != NULL)
+			{
 				prev_sep = 0;
 				continue;
 			}
