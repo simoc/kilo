@@ -24,7 +24,17 @@
 
 #define CTRL_KEY(k) ((k) & 0x1f)
 
+#define HL_HIGHLIGHT_NUMBERS (1 << 0)
+
 /*** data ***/
+
+struct editorSyntax
+{
+	char *filetype;
+	char **filematch;
+	int flags;
+};
+
 enum editorKey
 {
 	BACKSPACE = 127,
