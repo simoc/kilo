@@ -369,6 +369,39 @@ editorSyntaxToColour(int hl)
 	}
 }
 
+void
+editorSelectSyntaxHighlight(void)
+{
+	E.syntax = NULL;
+	if (E.filename == NULL)
+	{
+		return;
+	}
+
+	char *ext = strrchr(E.filename, '.');
+	unsigned int j;
+	for (j = 0; j < HLDB_ENTRIES; j++)
+	{
+		struct editorSyntax *s = &HLDB[j];
+		unsigned int i = 0;
+		while (s->filematch[i])
+		{
+			int is_ext = (s->filematch[i][0] == '.');
+			if (is_ext && ext && strcmp(ext, s->filematch[i]) == 0)
+			{
+				E.syntax = s;
+				return;
+			}
+			if (!is_ext && strstr(E.filename, s->filematch[i]))
+			{
+				E.syntax = s;
+				return;
+			}
+			i++;
+		}
+	}
+}
+
 /*** row operations ***/
 
 int
