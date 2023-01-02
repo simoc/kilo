@@ -364,6 +364,7 @@ editorUpdateSyntax(erow *row)
 
 	int prev_sep = 1;
 	int in_string = 0;
+	int in_comment = 0;
 
 	int i = 0;
 	while (i < row->rsize)
@@ -378,6 +379,34 @@ editorUpdateSyntax(erow *row)
 				/* highlight comment line */
 				memset(&row->hl[i], HL_COMMENT, row->rsize - i);
 				break;
+			}
+		}
+
+		if (mcs_len > 0 && mce_len > 0 && !in_string)
+		{
+			if (in_comment)
+			{
+				row->hl[i] = HL_MLCOMMENT;
+				if (strncmp(&row->render[i], mce, mce_len) == 0)
+				{
+					memset(&row->hl[i], HL_MLCOMMENT, mce_len);
+					i += mce_len;
+					in_comment = 0;
+					prev_sep = 0;
+					continue;
+				}
+				else
+				{
+					i++;
+					continue;
+				}
+			}
+			else if (strncmp(&row->render[i], mcs, mcs_len) == 0)
+			{
+				memset(&row->hl[i], HL_MLCOMMENT, mcs_len);
+				i += mcs_len;
+				in_comment = 1;
+				continue;
 			}
 		}
 
