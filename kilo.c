@@ -372,7 +372,7 @@ editorUpdateSyntax(erow *row)
 		char c = row->render[i];
 		unsigned char prev_hl = (i > 0) ? row->hl[i - 1] : HL_NORMAL;
 
-		if (scs_len > 0 && !in_string)
+		if (scs_len > 0 && !in_string && !in_comment)
 		{
 			if (strncmp(&row->render[i], scs, scs_len) == 0)
 			{
