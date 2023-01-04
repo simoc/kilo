@@ -4,10 +4,19 @@
 #define _BSD_SOURCE
 #define _GNU_SOURCE
 
+#ifdef _WIN32
+#include "kilo_win32.h"
+#else
 #include <sys/ioctl.h>
+#endif
+
 #include <sys/types.h>
+
+#ifndef _WIN32
 #include <termios.h>
 #include <unistd.h>
+#endif
+
 #include <errno.h>
 #include <ctype.h>
 #include <stdio.h>

@@ -1,0 +1,10 @@
+# Makefile for Windows NMAKE. Use command:
+# nmake /f Makefile.win32
+#
+kilo: kilo.c kilo_win32.c
+	$(CC) kilo.c kilo_win32.c /o kilo /Wall
+
+all: kilo
+
+clean:
+	del kilo
