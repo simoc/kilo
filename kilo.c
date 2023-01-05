@@ -329,6 +329,17 @@ getCurrentPosition(int *rows, int *cols)
 int
 getWindowSize(int *rows, int *cols)
 {
+#ifdef _WIN32
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+
+	if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi) == FALSE)
+	{
+		return -1;
+	}
+	*cols = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+	*rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+	return 0;
+#else
 	struct winsize ws;
 
 	if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == -1 || ws.ws_col == 0)
@@ -345,6 +356,7 @@ getWindowSize(int *rows, int *cols)
 		*rows = ws.ws_row;
 		return 0;
 	}
+#endif
 }
 
 /*** syntax highlighting ***/

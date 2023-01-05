@@ -13,12 +13,6 @@ getline(char **line, size_t *linecap, FILE *fp)
 }
 
 int
-ioctl(int fd, int flags, struct winsize *ws)
-{
-	return 0;
-}
-
-int
 tcgetattr(int fd, struct termios *termios)
 {
 	return 0;
