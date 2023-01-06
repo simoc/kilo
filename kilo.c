@@ -153,8 +153,13 @@ char *editorPrompt(char *prompt, void (*callback)(char *, int));
 void
 die(const char *s)
 {
+#ifdef _WIN32
+	WriteConsole(GetStdHandle(STD_OUTPUT_HANDLE), "\x1b[2J", 4, NULL, NULL);
+	WriteConsole(GetStdHandle(STD_OUTPUT_HANDLE), "\x1b[H", 3, NULL, NULL);
+#else
 	write(STDOUT_FILENO, "\x1b[2J", 4);
 	write(STDOUT_FILENO, "\x1b[H", 3);
+#endif
 	perror(s);
 	exit(1);
 }
@@ -162,15 +167,37 @@ die(const char *s)
 void
 disableRawMode(void)
 {
+#ifdef _WIN32
+	if (SetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE),
+		E.orig_termios.console_mode) == FALSE)
+	{
+		die("SetConsoleMode");
+	}
+#else
 	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &E.orig_termios) == -1)
 	{
 		die("tcsetattr");
 	}
+#endif
 }
 
 void
 enableRawMode(void)
 {
+#ifdef _WIN32
+	DWORD mode = 0;
+	if (GetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), &mode) == FALSE)
+	{
+		die("GetConsoleMode");
+	}
+	E.orig_termios.console_mode = mode;
+	atexit(disableRawMode);
+	mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+	if (SetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), mode) == FALSE)
+	{
+		die("SetConsoleMode");
+	}
+#else
 	if (tcgetattr(STDIN_FILENO, &E.orig_termios) == -1)
 	{
 		die("tcgetattr");
@@ -187,6 +214,7 @@ enableRawMode(void)
 	{
 		die("tcsetattr");
 	}
+#endif
 }
 
 int
@@ -1169,8 +1197,13 @@ editorProcessKeypress(void)
 			quit_times--;
 			return;
 		}
+#ifdef _WIN32
+		WriteConsole(GetStdHandle(STD_OUTPUT_HANDLE), "\x1b[2J", 4, NULL, NULL);
+		WriteConsole(GetStdHandle(STD_OUTPUT_HANDLE), "\x1b[H", 3, NULL, NULL);
+#else
 		write(STDOUT_FILENO, "\x1b[2J", 4);
 		write(STDOUT_FILENO, "\x1b[H", 3);
+#endif
 		exit(0);
 		break;
 
@@ -1447,7 +1480,11 @@ editorRefreshScreen(void)
 	/* show cursor */
 	abAppend(&ab, "\x1b[?25h", 6);
 
+#ifdef _WIN32
+	WriteConsole(GetStdHandle(STD_OUTPUT_HANDLE), ab.b, ab.len, NULL, NULL);
+#else
 	write(STDOUT_FILENO, ab.b, ab.len);
+#endif
 	abFree(&ab);
 }
 
@@ -1477,6 +1514,7 @@ initEditor(void)
 	E.statusmsg[0] = '\0';
 	E.statusmsg_time = 0;
 	E.syntax = NULL;
+	memset(&E.orig_termios, 0, sizeof(E.orig_termios));
 
 	if (getWindowSize(&E.screenrows, &E.screencols) == -1)
 	{
