@@ -168,8 +168,13 @@ void
 disableRawMode(void)
 {
 #ifdef _WIN32
+	if (SetConsoleMode(GetStdHandle(STD_INPUT_HANDLE),
+		E.orig_termios.console_input_mode) == FALSE)
+	{
+		die("SetConsoleMode");
+	}
 	if (SetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE),
-		E.orig_termios.console_mode) == FALSE)
+		E.orig_termios.console_output_mode) == FALSE)
 	{
 		die("SetConsoleMode");
 	}
@@ -185,15 +190,32 @@ void
 enableRawMode(void)
 {
 #ifdef _WIN32
-	DWORD mode = 0;
-	if (GetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), &mode) == FALSE)
+	DWORD output_mode = 0;
+	if (GetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), &output_mode) == FALSE)
 	{
 		die("GetConsoleMode");
 	}
-	E.orig_termios.console_mode = mode;
+	E.orig_termios.console_output_mode = output_mode;
+
+	DWORD input_mode = 0;
+	if (GetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), &input_mode) == FALSE)
+	{
+		die("GetConsoleMode");
+	}
+	E.orig_termios.console_input_mode = input_mode;
+
 	atexit(disableRawMode);
-	mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-	if (SetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), mode) == FALSE)
+
+	output_mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+	if (SetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), output_mode) == FALSE)
+	{
+		die("SetConsoleMode");
+	}
+
+	input_mode |= ENABLE_VIRTUAL_TERMINAL_INPUT;
+	input_mode &= ~(ENABLE_LINE_INPUT);
+	input_mode &= ~(ENABLE_ECHO_INPUT);
+	if (SetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), input_mode) == FALSE)
 	{
 		die("SetConsoleMode");
 	}
@@ -218,27 +240,63 @@ enableRawMode(void)
 }
 
 int
+readKeypress(void)
+{
+	char c;
+#ifdef _WIN32
+	DWORD nread;
+	if (ReadConsole(GetStdHandle(STD_INPUT_HANDLE), &c, 1, &nread, NULL) == FALSE)
+	{
+		return -1;
+	}
+	if (nread == 0)
+	{
+		return -1;
+	}
+#else
+	if (read(STDIN_FILENO, &c, 1) != 1)
+	{
+		return -1;
+	}
+#endif
+
+	return c;
+}
+
+int
 editorReadKey(void)
 {
-	int nread;
-	char c = '\0';
+	int c = 0;
 
-	while ((nread = read(STDIN_FILENO, &c, 1)) != 1)
+	while (1)
 	{
-		if (nread == -1 && errno != EAGAIN)
+		c = readKeypress();
+		if (c != -1)
+		{
+			break;
+		}
+#ifndef _WIN32
+		if (errno != EAGAIN)
 		{
 			die("read");
 		}
+#endif
 	}
+
 	if (c == '\x1b')
 	{
 		char seq[3];
+		int c0 = readKeypress();
+		seq[0] = c0;
 
-		if (read(STDIN_FILENO, &seq[0], 1) != 1)
+		if (c0 == -1)
 		{
 			return '\x1b';
 		}
-		if (read(STDIN_FILENO, &seq[1], 1) != 1)
+
+		int c1 = readKeypress();
+		seq[1] = c1;
+		if (c1 == -1)
 		{
 			return '\x1b';
 		}
@@ -247,10 +305,13 @@ editorReadKey(void)
 		{
 			if (seq[1] >= '0' && seq[1] <= '9')
 			{
-				if (read(STDIN_FILENO, &seq[2], 1) != 1)
+				int c2 = readKeypress();
+				seq[2] = c2;
+				if (c2 == -1)
 				{
 					return '\x1b';
 				}
+
 				if (seq[2] == '~')
 				{
 					switch (seq[1])
@@ -310,6 +371,7 @@ editorReadKey(void)
 	}
 }
 
+#ifndef _WIN32
 int
 getCurrentPosition(int *rows, int *cols)
 {
@@ -353,6 +415,7 @@ getCurrentPosition(int *rows, int *cols)
 
 	return 0;
 }
+#endif
 
 int
 getWindowSize(int *rows, int *cols)

@@ -3,12 +3,10 @@
 #include <stdio.h>
 #include <Windows.h>
 
-#define STDIN_FILENO 0
-#define STDOUT_FILENO 1
-
 struct termios
 {
-	DWORD console_mode;
+	DWORD console_input_mode; /* from GetConsoleMode() */
+	DWORD console_output_mode; /* from GetConsoleMode() */
 };
 
 struct winsize
