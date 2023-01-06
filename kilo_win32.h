@@ -17,6 +17,4 @@ struct winsize
 
 typedef unsigned int ssize_t;
 
-int ftruncate(int fd, int len);
-
 int getline(char **line, size_t *linecap, FILE *fp);

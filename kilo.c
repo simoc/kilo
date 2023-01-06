@@ -964,6 +964,8 @@ editorOpen(char *filename)
 void
 editorSave(void)
 {
+	int is_new_file = 0;
+
 	if (E.filename == NULL)
 	{
 		E.filename = editorPrompt("Save as: %s (ESC to cancel)", NULL);
@@ -973,29 +975,33 @@ editorSave(void)
 			return;
 		}
 		editorSelectSyntaxHighlight();
+		is_new_file = 1;
 	}
 
 	int len;
 	char *buf = editorRowsToString(&len);
 
-	int fd = open(E.filename, O_RDWR | O_CREAT, 0644);
-	if (fd != -1)
+	FILE *fp = fopen(E.filename, (is_new_file ? "wx" : "w"));
+	if (fp)
 	{
-		if (ftruncate(fd, len) != -1)
+		if (fwrite(buf, 1, len, fp) == len)
 		{
-			if (write(fd, buf, len) == len)
-			{
-				close(fd);
-				free(buf);
-				E.dirty = 0;
-				editorSetStatusMessage("%d bytes written to disk", len);
-				return;
-			}
+			fclose(fp);
+			free(buf);
+			E.dirty = 0;
+			editorSetStatusMessage("%d bytes written to disk", len);
+			return;
 		}
-		close(fd);
+		close(fp);
 	}
 	editorSetStatusMessage("Cannot save! I/O error: %s", strerror(errno));
 	free(buf);
+
+	if (is_new_file)
+	{
+		free(E.filename);
+		E.filename = NULL;
+	}
 }
 
 /*** find ***/
