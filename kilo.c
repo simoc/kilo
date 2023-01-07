@@ -968,7 +968,7 @@ editorSave(void)
 
 	if (E.filename == NULL)
 	{
-		E.filename = editorPrompt("Save as: %s (ESC to cancel)", NULL);
+		E.filename = editorPrompt("Save as: %s (ESC or Ctrl-Q to cancel)", NULL);
 		if (E.filename == NULL)
 		{
 			editorSetStatusMessage("Save aborted");
@@ -1086,7 +1086,7 @@ editorFind(void)
 	int saved_coloff = E.coloff;
 	int saved_rowoff = E.rowoff;
 
-	char *query = editorPrompt("Search: %s (Use ESC/Arrows/Enter)", editorFindCallback);
+	char *query = editorPrompt("Search: %s (Use ESC/Ctrl-Q/Arrows/Enter)", editorFindCallback);
 	if (query)
 	{
 		free(query);
@@ -1154,7 +1154,7 @@ editorPrompt(char *prompt, void (*callback)(char *, int))
 				buf[--buflen] = '\0';
 			}
 		}
-		else if (c == '\x1b')
+		else if (c == '\x1b' || c == CTRL_KEY('q'))
 		{
 				editorSetStatusMessage("");
 				if (callback)
