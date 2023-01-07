@@ -992,7 +992,7 @@ editorSave(void)
 			editorSetStatusMessage("%d bytes written to disk", len);
 			return;
 		}
-		close(fp);
+		fclose(fp);
 	}
 	editorSetStatusMessage("Cannot save! I/O error: %s", strerror(errno));
 	free(buf);
