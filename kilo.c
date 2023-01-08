@@ -1583,7 +1583,6 @@ initEditor(void)
 	E.statusmsg[0] = '\0';
 	E.statusmsg_time = 0;
 	E.syntax = NULL;
-	memset(&E.orig_termios, 0, sizeof(E.orig_termios));
 
 	if (getWindowSize(&E.screenrows, &E.screencols) == -1)
 	{
