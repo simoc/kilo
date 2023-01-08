@@ -17,6 +17,10 @@ getline(char **line, size_t *linecap, FILE *fp)
 
 	while (c != EOF)
 	{
+		/*
+		 * Ensure space for `len + 1` chars to handle case of
+		 * adding two chars \r and \n below.
+		 */
 		if (len + 1 >= *linecap)
 		{
 			*linecap += 256;
