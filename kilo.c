@@ -911,7 +911,7 @@ editorDelChar(void)
 /*** file i/o ***/
 
 char *
-editorRowsToString(int *buflen)
+editorRowsToString(size_t *buflen)
 {
 	int totlen = 0;
 	int j;
@@ -982,7 +982,7 @@ editorSave(void)
 		is_new_file = 1;
 	}
 
-	int len;
+	size_t len;
 	char *buf = editorRowsToString(&len);
 
 	FILE *fp = fopen(E.filename, (is_new_file ? "wx" : "w"));
