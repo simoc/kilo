@@ -254,7 +254,11 @@ readKeypress(void)
 		return -1;
 	}
 #else
-	if (read(STDIN_FILENO, &c, 1) != 1)
+	int nread;
+	while ((nread = read(STDIN_FILENO, &c, 1)) == 0)
+	{
+	}
+	if (nread < 0)
 	{
 		return -1;
 	}
