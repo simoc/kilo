@@ -4,10 +4,19 @@
 #define _BSD_SOURCE
 #define _GNU_SOURCE
 
+#ifdef _WIN32
+#include "kilo_win32.h"
+#else
 #include <sys/ioctl.h>
+#endif
+
 #include <sys/types.h>
+
+#ifndef _WIN32
 #include <termios.h>
 #include <unistd.h>
+#endif
+
 #include <errno.h>
 #include <ctype.h>
 #include <stdio.h>
@@ -144,8 +153,13 @@ char *editorPrompt(char *prompt, void (*callback)(char *, int));
 void
 die(const char *s)
 {
+#ifdef _WIN32
+	WriteConsole(GetStdHandle(STD_OUTPUT_HANDLE), "\x1b[2J", 4, NULL, NULL);
+	WriteConsole(GetStdHandle(STD_OUTPUT_HANDLE), "\x1b[H", 3, NULL, NULL);
+#else
 	write(STDOUT_FILENO, "\x1b[2J", 4);
 	write(STDOUT_FILENO, "\x1b[H", 3);
+#endif
 	perror(s);
 	exit(1);
 }
@@ -153,15 +167,59 @@ die(const char *s)
 void
 disableRawMode(void)
 {
+#ifdef _WIN32
+	if (SetConsoleMode(GetStdHandle(STD_INPUT_HANDLE),
+		E.orig_termios.console_input_mode) == FALSE)
+	{
+		die("SetConsoleMode");
+	}
+	if (SetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE),
+		E.orig_termios.console_output_mode) == FALSE)
+	{
+		die("SetConsoleMode");
+	}
+#else
 	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &E.orig_termios) == -1)
 	{
 		die("tcsetattr");
 	}
+#endif
 }
 
 void
 enableRawMode(void)
 {
+#ifdef _WIN32
+	DWORD output_mode = 0;
+	if (GetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), &output_mode) == FALSE)
+	{
+		die("GetConsoleMode");
+	}
+	E.orig_termios.console_output_mode = output_mode;
+
+	DWORD input_mode = 0;
+	if (GetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), &input_mode) == FALSE)
+	{
+		die("GetConsoleMode");
+	}
+	E.orig_termios.console_input_mode = input_mode;
+
+	atexit(disableRawMode);
+
+	output_mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+	if (SetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), output_mode) == FALSE)
+	{
+		die("SetConsoleMode");
+	}
+
+	input_mode |= ENABLE_VIRTUAL_TERMINAL_INPUT;
+	input_mode &= ~(ENABLE_LINE_INPUT);
+	input_mode &= ~(ENABLE_ECHO_INPUT);
+	if (SetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), input_mode) == FALSE)
+	{
+		die("SetConsoleMode");
+	}
+#else
 	if (tcgetattr(STDIN_FILENO, &E.orig_termios) == -1)
 	{
 		die("tcgetattr");
@@ -178,30 +236,71 @@ enableRawMode(void)
 	{
 		die("tcsetattr");
 	}
+#endif
+}
+
+int
+readKeypress(void)
+{
+	char c;
+#ifdef _WIN32
+	DWORD nread;
+	if (ReadConsole(GetStdHandle(STD_INPUT_HANDLE), &c, 1, &nread, NULL) == FALSE)
+	{
+		return -1;
+	}
+	if (nread == 0)
+	{
+		return -1;
+	}
+#else
+	int nread;
+	while ((nread = read(STDIN_FILENO, &c, 1)) == 0)
+	{
+	}
+	if (nread < 0)
+	{
+		return -1;
+	}
+#endif
+
+	return c;
 }
 
 int
 editorReadKey(void)
 {
-	int nread;
-	char c = '\0';
+	int c = 0;
 
-	while ((nread = read(STDIN_FILENO, &c, 1)) != 1)
+	while (1)
 	{
-		if (nread == -1 && errno != EAGAIN)
+		c = readKeypress();
+		if (c != -1)
+		{
+			break;
+		}
+#ifndef _WIN32
+		if (errno != EAGAIN)
 		{
 			die("read");
 		}
+#endif
 	}
+
 	if (c == '\x1b')
 	{
 		char seq[3];
+		int c0 = readKeypress();
+		seq[0] = c0;
 
-		if (read(STDIN_FILENO, &seq[0], 1) != 1)
+		if (c0 == -1)
 		{
 			return '\x1b';
 		}
-		if (read(STDIN_FILENO, &seq[1], 1) != 1)
+
+		int c1 = readKeypress();
+		seq[1] = c1;
+		if (c1 == -1)
 		{
 			return '\x1b';
 		}
@@ -210,10 +309,13 @@ editorReadKey(void)
 		{
 			if (seq[1] >= '0' && seq[1] <= '9')
 			{
-				if (read(STDIN_FILENO, &seq[2], 1) != 1)
+				int c2 = readKeypress();
+				seq[2] = c2;
+				if (c2 == -1)
 				{
 					return '\x1b';
 				}
+
 				if (seq[2] == '~')
 				{
 					switch (seq[1])
@@ -273,6 +375,7 @@ editorReadKey(void)
 	}
 }
 
+#ifndef _WIN32
 int
 getCurrentPosition(int *rows, int *cols)
 {
@@ -316,10 +419,22 @@ getCurrentPosition(int *rows, int *cols)
 
 	return 0;
 }
+#endif
 
 int
 getWindowSize(int *rows, int *cols)
 {
+#ifdef _WIN32
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+
+	if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi) == FALSE)
+	{
+		return -1;
+	}
+	*cols = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+	*rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+	return 0;
+#else
 	struct winsize ws;
 
 	if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == -1 || ws.ws_col == 0)
@@ -336,6 +451,7 @@ getWindowSize(int *rows, int *cols)
 		*rows = ws.ws_row;
 		return 0;
 	}
+#endif
 }
 
 /*** syntax highlighting ***/
@@ -795,7 +911,7 @@ editorDelChar(void)
 /*** file i/o ***/
 
 char *
-editorRowsToString(int *buflen)
+editorRowsToString(size_t *buflen)
 {
 	int totlen = 0;
 	int j;
@@ -852,38 +968,44 @@ editorOpen(char *filename)
 void
 editorSave(void)
 {
+	int is_new_file = 0;
+
 	if (E.filename == NULL)
 	{
-		E.filename = editorPrompt("Save as: %s (ESC to cancel)", NULL);
+		E.filename = editorPrompt("Save as: %s (ESC or Ctrl-Q to cancel)", NULL);
 		if (E.filename == NULL)
 		{
 			editorSetStatusMessage("Save aborted");
 			return;
 		}
 		editorSelectSyntaxHighlight();
+		is_new_file = 1;
 	}
 
-	int len;
+	size_t len;
 	char *buf = editorRowsToString(&len);
 
-	int fd = open(E.filename, O_RDWR | O_CREAT, 0644);
-	if (fd != -1)
+	FILE *fp = fopen(E.filename, (is_new_file ? "wx" : "w"));
+	if (fp)
 	{
-		if (ftruncate(fd, len) != -1)
+		if (fwrite(buf, 1, len, fp) == len)
 		{
-			if (write(fd, buf, len) == len)
-			{
-				close(fd);
-				free(buf);
-				E.dirty = 0;
-				editorSetStatusMessage("%d bytes written to disk", len);
-				return;
-			}
+			fclose(fp);
+			free(buf);
+			E.dirty = 0;
+			editorSetStatusMessage("%d bytes written to disk", len);
+			return;
 		}
-		close(fd);
+		fclose(fp);
 	}
 	editorSetStatusMessage("Cannot save! I/O error: %s", strerror(errno));
 	free(buf);
+
+	if (is_new_file)
+	{
+		free(E.filename);
+		E.filename = NULL;
+	}
 }
 
 /*** find ***/
@@ -968,7 +1090,7 @@ editorFind(void)
 	int saved_coloff = E.coloff;
 	int saved_rowoff = E.rowoff;
 
-	char *query = editorPrompt("Search: %s (Use ESC/Arrows/Enter)", editorFindCallback);
+	char *query = editorPrompt("Search: %s (Use ESC/Ctrl-Q/Arrows/Enter)", editorFindCallback);
 	if (query)
 	{
 		free(query);
@@ -1036,7 +1158,7 @@ editorPrompt(char *prompt, void (*callback)(char *, int))
 				buf[--buflen] = '\0';
 			}
 		}
-		else if (c == '\x1b')
+		else if (c == '\x1b' || c == CTRL_KEY('q'))
 		{
 				editorSetStatusMessage("");
 				if (callback)
@@ -1148,8 +1270,13 @@ editorProcessKeypress(void)
 			quit_times--;
 			return;
 		}
+#ifdef _WIN32
+		WriteConsole(GetStdHandle(STD_OUTPUT_HANDLE), "\x1b[2J", 4, NULL, NULL);
+		WriteConsole(GetStdHandle(STD_OUTPUT_HANDLE), "\x1b[H", 3, NULL, NULL);
+#else
 		write(STDOUT_FILENO, "\x1b[2J", 4);
 		write(STDOUT_FILENO, "\x1b[H", 3);
+#endif
 		exit(0);
 		break;
 
@@ -1427,7 +1554,11 @@ editorRefreshScreen(void)
 	/* show cursor */
 	abAppend(&ab, "\x1b[?25h", 6);
 
+#ifdef _WIN32
+	WriteConsole(GetStdHandle(STD_OUTPUT_HANDLE), ab.b, ab.len, NULL, NULL);
+#else
 	write(STDOUT_FILENO, ab.b, ab.len);
+#endif
 	abFree(&ab);
 }
 
